@@ -1,5 +1,7 @@
 package no.ntnu.idatg2003.chaosgame.backend;
 
+import java.util.Vector;
+
 /**
  * A class representing a 2x2 matrix
  */
@@ -32,8 +34,8 @@ public class Matrix2x2 {
      * @return the resulting vector
      */
     public Vector2D multiply(Vector2D v) {
-        double x = a00 * v.getX() + a01 * v.getY();
-        double y = a10 * v.getX() + a11 * v.getY();
+        double x = a00 * v.getX0() + a01 * v.getX1();
+        double y = a10 * v.getX0() + a11 * v.getX1();
         return new Vector2D(x, y);
     }
 }
