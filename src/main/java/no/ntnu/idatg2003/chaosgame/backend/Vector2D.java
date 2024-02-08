@@ -15,25 +15,24 @@ public class Vector2D {
         return x0;
     }
 
+    public void setX0(double x0) {
+        this.x0 = x0;
+    }
 
     public double getX1() {
         return x1;
-    }
-
-    public void setX0(double x0) {
-        this.x0 = x0;
     }
 
     public void setX1(double x1) {
         this.x1 = x1;
     }
 
-    public Vector2D addVector(Vector2D v, Vector2D v2) {
-        return new Vector2D(v.getX0() + v2.getX0(), v.getX1() + v2.getX1());
+    public Vector2D subtract(Vector2D v) {
+        return new Vector2D(x0 - v.getX0(), x1 - v.getX1());
     }
 
-    public double subtractVector(Vector2D v) {
-        return new Vector2D(v.getX0() - this.getX0(), v.getX1() - this.getX1()).getLength();
+    public Vector2D add(Vector2D other) {
+        return new Vector2D(x0 + other.getX0(), x1 + other.getX1());
     }
 
     public double getLength() {

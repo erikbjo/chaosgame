@@ -1,20 +1,29 @@
 package no.ntnu.idatg2003.chaosgame.backend;
 
 public class Complex extends Vector2D {
+  public Complex(double x0, double x1) {
+    super(x0, x1);
+  }
 
-        public Complex(double x0, double x1) {
-            super(x0, x1);
-        }
+  public Complex sqrt() {
+    double r = Math.sqrt((x0 + Math.sqrt(x0 * x0 + x1 * x1)) / 2);
+    double i = Math.signum(x1) * Math.sqrt((-x0 + Math.sqrt(x0 * x0 + x1 * x1)) / 2);
+    return new Complex(r, i);
+  }
 
-        public Complex addComplex(Complex c, Complex c2) {
-            return new Complex(c.getX0() + c2.getX0(), c.getX1() + c2.getX1());
-        }
+  public double getReal() {
+    return x0;
+  }
 
-        public double subtractComplex(Complex c) {
-            return new Complex(c.getX0() - this.getX0(), c.getX1() - this.getX1()).getLength();
-        }
+  public double getImaginary() {
+    return x1;
+  }
 
-        public double getLength() {
-            return Math.sqrt(x0 * x0 + x1 * x1);
-        }
+  public Complex subtract(Vector2D v) {
+    return new Complex(x0 - v.getX0(), x1 - v.getX1());
+  }
+
+  public Complex multiply(int sign) {
+    return new Complex(sign * x0, sign * x1);
+  }
 }
