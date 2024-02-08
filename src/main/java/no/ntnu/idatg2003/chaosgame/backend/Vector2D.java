@@ -2,8 +2,8 @@ package no.ntnu.idatg2003.chaosgame.backend;
 
 public class Vector2D {
 
-    private double x0;
-    private double x1;
+    protected double x0;
+    protected double x1;
 
     public Vector2D(double x0, double x1) {
         this.setX0(x0);
