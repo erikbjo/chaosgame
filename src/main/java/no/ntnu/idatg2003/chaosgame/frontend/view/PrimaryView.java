@@ -19,7 +19,7 @@ public class PrimaryView extends Application {
 
       @Override
       public void start(Stage primaryStage) throws Exception {
-          FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxmlfiles/primary.fxml"));
+          FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxmlfiles/menu.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
             primaryStage.setTitle("Chaos Game");
