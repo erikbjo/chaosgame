@@ -1,7 +1,7 @@
 package no.ntnu.idatg2003.chaosgame.backend;
 
 public class Complex extends Vector2D {
-    
+
         public Complex(double x0, double x1) {
             super(x0, x1);
         }
