@@ -1,4 +1,4 @@
-package no.ntnu.idatg2003.chaosgame;
+package no.ntnu.idatg2003.chaosgame.frontend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
