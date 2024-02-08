@@ -14,7 +14,7 @@ public class PrimaryView extends Application {
     * @param args The command line arguments.
     */
       public static void mainApp(String[] args) {
-     launch(args);
+        launch(args);
       }
 
       @Override
@@ -24,7 +24,7 @@ public class PrimaryView extends Application {
             Scene scene = new Scene(root);
             primaryStage.setTitle("Chaos Game");
             primaryStage.setScene(scene);
+            primaryStage.setFullScreen(true);
             primaryStage.show();
-     throw new UnsupportedOperationException("Not supported yet.");
       }
 }

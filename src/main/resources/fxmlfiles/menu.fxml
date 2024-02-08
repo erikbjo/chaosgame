@@ -10,10 +10,10 @@
    <left>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" BorderPane.alignment="CENTER">
          <children>
-            <Button text="Start" />
+            <Button fx:id="startApplicationButton" onAction="#startApplication" text="Start" />
             <Button mnemonicParsing="false" text="Load" />
             <Button mnemonicParsing="false" text="Settings" />
-            <Button mnemonicParsing="false" text="Exit" />
+            <Button fx:id="quitApplicationButton" mnemonicParsing="false" onAction="#quitApplication" text="Exit" />
          </children>
          <BorderPane.margin>
             <Insets bottom="50.0" top="50.0" />
@@ -21,6 +21,6 @@
       </VBox>
    </left>
    <center>
-      <Pane prefHeight="800.0" prefWidth="800.0" BorderPane.alignment="CENTER" />
+      <Pane fx:id="mainPane" prefHeight="800.0" prefWidth="800.0" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>
