@@ -11,15 +11,14 @@ class JuliaTransformTest {
   Vector2D v2 = new Vector2D(3, 5);
   Complex z = new Complex(0.4, 0.2);
   Complex c = new Complex(0.3, 0.6);
-  JuliaTransform jt = new JuliaTransform(z, 1);
+  JuliaTransform jt = new JuliaTransform(c, 1);
 
   @BeforeEach
   void setUp() {}
 
   @Test
   void transform() {
-    Vector2D v3 = jt.transform(v);
-    //assertEquals(1.5, v3.getX0());
-    //assertEquals(0.5, v3.getX1());
+    assertTrue(String.valueOf(jt.transform(z).getX0()).startsWith("0.506"));
+    assertTrue(String.valueOf(jt.transform(z).getX1()).startsWith("-0.395"));
   }
 }
