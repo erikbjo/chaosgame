@@ -38,4 +38,8 @@ public class Vector2D {
     public double getLength() {
         return Math.sqrt(x0 * x0 + x1 * x1);
     }
+
+    public Vector2D scalarMultiply(double v) {
+        return new Vector2D(x0 * v, x1 * v);
+    }
 }

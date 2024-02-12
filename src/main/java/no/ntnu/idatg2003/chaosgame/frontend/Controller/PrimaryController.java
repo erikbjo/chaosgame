@@ -8,15 +8,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.Pane;
+import javafx.scene.control.Slider;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import no.ntnu.idatg2003.chaosgame.backend.Complex;
-import no.ntnu.idatg2003.chaosgame.backend.JuliaTransform;
 import no.ntnu.idatg2003.chaosgame.backend.Vector2D;
 import no.ntnu.idatg2003.chaosgame.frontend.alert.ConfirmationAlert;
-import org.springframework.stereotype.Indexed;
 
 import java.net.URL;
 import java.util.Random;
@@ -33,53 +28,40 @@ public class PrimaryController implements Initializable {
     @FXML private Button quitApplicationButton;
     @FXML private Button startApplicationButton;
     @FXML private Canvas mainCanvas;
+    @FXML private Slider cImSlider;
+    @FXML private Slider cReSlider;
     // Assuming these properties for the JuliaTransform
-    private Vector2D original = new Vector2D(0.0, 0.0);
-    private final Complex point = new Complex(1.0, 1.0);
-    private final JuliaTransform juliaTransform = new JuliaTransform(point, 1);
-    private final double FACTOR = 0.01;
-    private final double SCALE = 100;
+
     private AnimationTimer animationTimer;
+    private static final double zoomSpeed = 0.0002;
+    private double scaleFactor = 1.0;
+    private static final int ITERATIONS = 100;
+    private double xMin = -1.5;
+    private double xMax = 1.5;
+    private double yMin = -1.5;
+    private double yMax = 1.5;
+
     @FXML
     public void initialize() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        animationTimer = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                    // Store the old transformed vector
-                    Vector2D oldTransformed = new Vector2D(original.getX0(), original.getX1());
+        if(mainCanvas != null) {
+            animationTimer = new AnimationTimer() {
+                long lastUpdate = 0;
 
-                    // Transform original Vector2D
-                    Vector2D transformed = juliaTransform.transform(original);
-
-                    double centerX = mainCanvas.getWidth() / 2;
-                    double centerY = mainCanvas.getHeight() / 2;
-
-                    double oldDrawX = centerX + SCALE * FACTOR * oldTransformed.getX0();
-                    double oldDrawY = centerY + SCALE * FACTOR * oldTransformed.getX1();
-
-                    double newDrawX = centerX + SCALE * transformed.getX0();
-                    double newDrawY = centerY + SCALE * transformed.getX1();
-
-                    // Verify that we are within the bounds of the canvas
-                    if(newDrawX >= 0 && newDrawX <= mainCanvas.getWidth()
-                            && newDrawY >= 0 && newDrawY <= mainCanvas.getHeight()) {
-                        // Draw the transformed vector
+                @Override
+                public void handle(long now) {
+                    if ((now - lastUpdate) >= 22_000_000) {
+                        lastUpdate = now;
                         GraphicsContext gc = mainCanvas.getGraphicsContext2D();
-                        gc.setStroke(Color.BLUE);
-                        gc.setLineWidth(2.0);
-                        gc.strokeLine(oldDrawX, oldDrawY, newDrawX, newDrawY);
-                        System.out.printf("Drawing line from (%f, %f) to (%f, %f)\n", oldDrawX, oldDrawY, newDrawX, newDrawY);
+                        drawSierpinski(gc, 10000, scaleFactor);
                     }
-
-                    // Change original
-                    original = transformed;
                 }
-        };
+            };
+            animationTimer.start();
+        }
     }
 
     @FXML
@@ -95,13 +77,70 @@ public class PrimaryController implements Initializable {
 
     @FXML
     public void startApplication(ActionEvent event) {
-        animationTimer.start();
-        System.out.println("Starting application");
-        System.out.printf(animationTimer.toString());
+        //drawJuliaSet(mainCanvas.getGraphicsContext2D(), ITERATIONS);
+        GraphicsContext gc = mainCanvas.getGraphicsContext2D();
+        drawSierpinski(gc, 1000, scaleFactor);
     }
 
-    @FXML
-    public void drawToCanvas(ActionEvent event) {
+    public void drawSierpinski(GraphicsContext gc, int iterations, double scaleFactor) {
+        Vector2D canvasSize = new Vector2D(mainCanvas.getWidth(), mainCanvas.getHeight());
+        gc.clearRect(0, 0, canvasSize.getX0(), canvasSize.getX1());
 
+        Vector2D point1 = new Vector2D(0.0, 0.0);
+        Vector2D point2 = new Vector2D(canvasSize.getX0() / scaleFactor, 0.0);
+        Vector2D point3 = new Vector2D(canvasSize.getX0() / scaleFactor / 2, canvasSize.getX1() / scaleFactor);
+        Vector2D[] points = new Vector2D[]{point1, point2, point3};
+
+        Vector2D currentPoint = new Vector2D(canvasSize.getX0() / scaleFactor / 2, canvasSize.getX1() / scaleFactor / 2);
+
+        Random random = new Random();
+        for (int i = 0; i < iterations; i++) {
+            Vector2D targetPoint = points[random.nextInt(3)];
+            Vector2D midPoint = currentPoint.add(targetPoint).scalarMultiply(0.5);
+            gc.setFill(Color.BLUE);
+            gc.fillRect(midPoint.getX0() * scaleFactor, midPoint.getX1() * scaleFactor, 1, 1);
+            currentPoint = midPoint;
+        }
+    }
+
+    public void drawJuliaSet(GraphicsContext gc, int iterations) {
+        if (gc == null || mainCanvas == null || scaleFactor <= 0 || iterations <= 0 || xMin == xMax || yMin == yMax) {
+            System.out.println("Returning due to invalid parameters or null values...");
+            return;
+        }
+
+        Vector2D canvasSize = new Vector2D(mainCanvas.getWidth(), mainCanvas.getHeight());
+
+        if (canvasSize.getX0() <= 0 || canvasSize.getX1() <= 0) {
+            System.out.println("Returning due to invalid canvas size...");
+            return;
+        }
+
+        gc.clearRect(0, 0, canvasSize.getX0(), canvasSize.getX1());
+
+        for (double pixelX = 0; pixelX < canvasSize.getX0(); pixelX++) {
+            double zx = pixelX * (xMax - xMin) / canvasSize.getX0() + xMin;
+
+            for (double pixelY = 0; pixelY < canvasSize.getX1(); pixelY++) {
+                double zy = pixelY * (yMax - yMin) / canvasSize.getX1() + yMin;
+                Vector2D complex = new Vector2D(zx, zy);
+
+                int iteration;
+
+                for (iteration = 0; iteration < iterations && Math.pow(complex.getX0(), 2) + Math.pow(complex.getX1(), 2) <= 4; iteration++) {
+                    double newRe = complex.getX0() * complex.getX0() - complex.getX1() * complex.getX1() + cReSlider.getValue();
+                    double newIm = 2.0 * complex.getX0() * complex.getX1() + cImSlider.getValue();
+                    complex = new Vector2D(newRe, newIm);
+                }
+
+                gc.setFill(iteration == iterations ? Color.BLACK : Color.gray(1.0 - ((double)iteration / iterations)));
+                gc.fillRect(pixelX, pixelY, scaleFactor, scaleFactor);
+            }
+        }
+    }
+    @FXML
+    public void sliderChanged() {
+        GraphicsContext gc = mainCanvas.getGraphicsContext2D();
+        drawJuliaSet(gc, ITERATIONS);
     }
 }
