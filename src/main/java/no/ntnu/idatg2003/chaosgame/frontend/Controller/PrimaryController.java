@@ -8,7 +8,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import no.ntnu.idatg2003.chaosgame.backend.Vector2D;
 import no.ntnu.idatg2003.chaosgame.frontend.alert.ConfirmationAlert;
@@ -27,6 +30,7 @@ public class PrimaryController implements Initializable {
 
     @FXML private Button quitApplicationButton;
     @FXML private Button startApplicationButton;
+    @FXML private ScrollPane scrollPane;
     @FXML private Canvas mainCanvas;
     @FXML private Slider cImSlider;
     @FXML private Slider cReSlider;
@@ -39,6 +43,9 @@ public class PrimaryController implements Initializable {
     private double xMax = 1.5;
     private double yMin = -1.5;
     private double yMax = 1.5;
+    // Instance variables
+    private double startX;
+    private double startY;
 
     @FXML
     public void initialize() {
@@ -46,20 +53,56 @@ public class PrimaryController implements Initializable {
     }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        if(mainCanvas != null) {
-            animationTimer = new AnimationTimer() {
-                long lastUpdate = 0;
 
-                @Override
-                public void handle(long now) {
-                    if ((now - lastUpdate) >= 22_000_000) {
-                        lastUpdate = now;
-                        GraphicsContext gc = mainCanvas.getGraphicsContext2D();
-                        drawSierpinski(gc);
-                    }
-                }
-            };
-        }
+        animationTimer = new AnimationTimer() {
+            long lastUpdate = 0;
+
+            @Override
+            public void handle(long now) {
+                mainCanvas.setOnMousePressed(event -> {
+                    startX = event.getX();
+                    startY = event.getY();
+                });
+
+                mainCanvas.setOnMouseDragged(event -> {
+                    double endX = event.getX();
+                    double endY = event.getY();
+
+                    double dx = startX - endX;
+                    double dy = startY - endY;
+
+                    double xRange = xMax - xMin;
+                    double yRange = yMax - yMin;
+
+                    xMin += dx / mainCanvas.getWidth() * xRange;
+                    xMax += dx / mainCanvas.getWidth() * xRange;
+
+                    yMin += dy / mainCanvas.getHeight() * yRange;
+                    yMax += dy / mainCanvas.getHeight() * yRange;
+
+                    // Save the current position for the next drag event
+                    startX = endX;
+                    startY = endY;
+
+                    // Refresh the drawing
+                    drawJuliaSet(mainCanvas.getGraphicsContext2D());
+                });
+
+
+                mainCanvas.setOnScroll(event -> {
+                    double scaleFactor = event.getDeltaY() > 0 ? 1.1 : 1 / 1.1; // zoom in if scroll up, else zoom out
+                    double mouseX = Math.max(0, Math.min(event.getX(), mainCanvas.getWidth() - 1));
+                    double mouseY = Math.max(0, Math.min(event.getY(), mainCanvas.getHeight() - 1));
+
+                    double centerX = xMin + mouseX / mainCanvas.getWidth() * (xMax - xMin);
+                    double centerY = yMin + mouseY / mainCanvas.getHeight() * (yMax - yMin);
+
+                    zoom(scaleFactor, centerX, centerY);
+                });
+
+                drawJuliaSet(mainCanvas.getGraphicsContext2D());
+            }
+        };
     }
 
     @FXML
@@ -77,11 +120,11 @@ public class PrimaryController implements Initializable {
     public void startApplication(ActionEvent event) {
         //drawJuliaSet(mainCanvas.getGraphicsContext2D(), ITERATIONS);
         GraphicsContext gc = mainCanvas.getGraphicsContext2D();
-        drawSierpinski(gc);
+        drawJuliaSet(gc);
     }
 
     public void drawSierpinski(GraphicsContext gc) {
-        int iterations = (int) iterationSlider.getValue() * 10; // Casting to int since iterations should be an integer.
+        int iterations = (int) iterationSlider.getValue() * 100; // Casting to int since iterations should be an integer.
         double scaleFactor = cImSlider.getValue();
 
         Vector2D canvasSize = new Vector2D(mainCanvas.getWidth(), mainCanvas.getHeight());
@@ -105,45 +148,76 @@ public class PrimaryController implements Initializable {
     }
 
     public void drawJuliaSet(GraphicsContext gc) {
-        int iterations = (int) iterationSlider.getValue();
-        if (gc == null || mainCanvas == null || scaleFactor <= 0 || iterations <= 0 || xMin == xMax || yMin == yMax) {
+        double iterations = iterationSlider.getValue();
+        double cRe = cReSlider.getValue();
+        double cIm = cImSlider.getValue();
+        double xRange = xMax - xMin;
+        double yRange = yMax - yMin;
+        double canvasWidth = mainCanvas.getWidth();
+        double canvasHeight = mainCanvas.getHeight();
+
+        if (gc == null || mainCanvas == null || scaleFactor <= 0 || iterations <= 1) {
             System.out.println("Returning due to invalid parameters or null values...");
             return;
         }
 
-        Vector2D canvasSize = new Vector2D(mainCanvas.getWidth(), mainCanvas.getHeight());
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
+        WritableImage image = new WritableImage((int)canvasWidth, (int)canvasHeight);
+        PixelWriter pixelWriter = image.getPixelWriter();
 
-        if (canvasSize.getX0() <= 0 || canvasSize.getX1() <= 0) {
-            System.out.println("Returning due to invalid canvas size...");
-            return;
-        }
+        for (double pixelX = 0; pixelX < canvasWidth; pixelX++) {
+            for (double pixelY = 0; pixelY < canvasHeight; pixelY++) {
+                double zx = (pixelX / canvasWidth) * xRange + xMin;
+                double zy = (pixelY / canvasHeight) * yRange + yMin;
+                int iter = 0;
 
-        gc.clearRect(0, 0, canvasSize.getX0(), canvasSize.getX1());
+                while (zx*zx + zy*zy < 4 && iter < iterations) {
+                    double tmp = zx*zx - zy*zy + cRe; // calculation of the real part
 
-        for (double pixelX = 0; pixelX < canvasSize.getX0(); pixelX++) {
-            double zx = pixelX * (xMax - xMin) / canvasSize.getX0() + xMin;
+                    zy = 2 * zx * zy + cIm; // calculation of the imaginary part
+                    zx = tmp;
 
-            for (double pixelY = 0; pixelY < canvasSize.getX1(); pixelY++) {
-                double zy = pixelY * (yMax - yMin) / canvasSize.getX1() + yMin;
-                Vector2D complex = new Vector2D(zx, zy);
-
-                int iteration;
-
-                for (iteration = 0; iteration < iterations && Math.pow(complex.getX0(), 2) + Math.pow(complex.getX1(), 2) <= 4; iteration++) {
-                    double newRe = complex.getX0() * complex.getX0() - complex.getX1() * complex.getX1() + cReSlider.getValue();
-                    double newIm = 2.0 * complex.getX0() * complex.getX1() + cImSlider.getValue();
-                    complex = new Vector2D(newRe, newIm);
+                    iter++;
                 }
 
-                gc.setFill(iteration == iterations ? Color.BLACK : Color.gray(1.0 - ((double)iteration / iterations)));
-                gc.fillRect(pixelX, pixelY, scaleFactor, scaleFactor);
+                if (iter < iterations) {
+                    pixelWriter.setColor((int)pixelX, (int)pixelY, Color.gray((double)iter/iterations));
+                } else {
+                    pixelWriter.setColor((int)pixelX, (int)pixelY, Color.BLACK);
+                }
             }
         }
+
+        gc.drawImage(image, 0, 0, canvasWidth, canvasHeight);
     }
 
     @FXML
     public void sliderChanged() {
         animationTimer.stop();
         animationTimer.start();
+    }
+
+
+    // method to stop and start animation
+    public void restartAnimation() {
+        animationTimer.stop();
+        animationTimer.start();
+    }
+
+    public void zoom(double scaleFactor, double centerX, double centerY) {
+        double scaleUpperBound = 100.0; // the maximum zoom-in level
+        double scaleLowerBound = 0.01; // the maximum zoom-out level
+
+        scaleFactor = Math.max(scaleFactor, scaleLowerBound);
+        scaleFactor = Math.min(scaleFactor, scaleUpperBound);
+
+        double halfWidth = (xMax - xMin) / 2.0;
+        double halfHeight = (yMax - yMin) / 2.0;
+
+        xMin = centerX - halfWidth / scaleFactor;
+        xMax = centerX + halfWidth / scaleFactor;
+
+        yMin = centerY - halfHeight / scaleFactor;
+        yMax = centerY + halfHeight / scaleFactor;
     }
 }

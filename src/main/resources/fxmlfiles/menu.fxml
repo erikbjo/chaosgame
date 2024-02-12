@@ -22,16 +22,16 @@
          </BorderPane.margin>
       </VBox>
    </left>
-   <center>
-      <Canvas fx:id="mainCanvas" height="500.0" width="500.0" BorderPane.alignment="CENTER" />
-   </center>
    <bottom>
-      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <HBox alignment="CENTER">
          <children>
-            <Slider fx:id="cReSlider" blockIncrement="1.0E-4" max="2.0" min="-2.0" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" value="-0.877" />
-            <Slider fx:id="cImSlider" blockIncrement="1.0E-5" max="2.0" min="-2.0" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" value="1.0" />
+            <Slider fx:id="cReSlider" blockIncrement="1.0E-4" max="2.0" min="-2.0" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" />
+            <Slider fx:id="cImSlider" blockIncrement="1.0E-5" max="2.0" min="-2.0" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" />
             <Slider fx:id="iterationSlider" majorTickUnit="2500" max="1000.0" min="1.0" minorTickCount="10" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" value="1.0" />
          </children>
       </HBox>
    </bottom>
+   <center>
+      <Canvas fx:id="mainCanvas" height="500.0" nodeOrientation="INHERIT" width="500.0" />
+   </center>
 </BorderPane>
