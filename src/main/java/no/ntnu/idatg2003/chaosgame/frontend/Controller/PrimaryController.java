@@ -30,12 +30,11 @@ public class PrimaryController implements Initializable {
     @FXML private Canvas mainCanvas;
     @FXML private Slider cImSlider;
     @FXML private Slider cReSlider;
+    @FXML private Slider iterationSlider;
     // Assuming these properties for the JuliaTransform
 
     private AnimationTimer animationTimer;
-    private static final double zoomSpeed = 0.0002;
     private double scaleFactor = 1.0;
-    private static final int ITERATIONS = 100;
     private double xMin = -1.5;
     private double xMax = 1.5;
     private double yMin = -1.5;
@@ -56,11 +55,10 @@ public class PrimaryController implements Initializable {
                     if ((now - lastUpdate) >= 22_000_000) {
                         lastUpdate = now;
                         GraphicsContext gc = mainCanvas.getGraphicsContext2D();
-                        drawSierpinski(gc, 10000, scaleFactor);
+                        drawSierpinski(gc);
                     }
                 }
             };
-            animationTimer.start();
         }
     }
 
@@ -79,10 +77,13 @@ public class PrimaryController implements Initializable {
     public void startApplication(ActionEvent event) {
         //drawJuliaSet(mainCanvas.getGraphicsContext2D(), ITERATIONS);
         GraphicsContext gc = mainCanvas.getGraphicsContext2D();
-        drawSierpinski(gc, 1000, scaleFactor);
+        drawSierpinski(gc);
     }
 
-    public void drawSierpinski(GraphicsContext gc, int iterations, double scaleFactor) {
+    public void drawSierpinski(GraphicsContext gc) {
+        int iterations = (int) iterationSlider.getValue() * 10; // Casting to int since iterations should be an integer.
+        double scaleFactor = cImSlider.getValue();
+
         Vector2D canvasSize = new Vector2D(mainCanvas.getWidth(), mainCanvas.getHeight());
         gc.clearRect(0, 0, canvasSize.getX0(), canvasSize.getX1());
 
@@ -103,7 +104,8 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    public void drawJuliaSet(GraphicsContext gc, int iterations) {
+    public void drawJuliaSet(GraphicsContext gc) {
+        int iterations = (int) iterationSlider.getValue();
         if (gc == null || mainCanvas == null || scaleFactor <= 0 || iterations <= 0 || xMin == xMax || yMin == yMax) {
             System.out.println("Returning due to invalid parameters or null values...");
             return;
@@ -138,9 +140,10 @@ public class PrimaryController implements Initializable {
             }
         }
     }
+
     @FXML
     public void sliderChanged() {
-        GraphicsContext gc = mainCanvas.getGraphicsContext2D();
-        drawJuliaSet(gc, ITERATIONS);
+        animationTimer.stop();
+        animationTimer.start();
     }
 }

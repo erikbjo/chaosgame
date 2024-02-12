@@ -30,6 +30,7 @@
          <children>
             <Slider fx:id="cReSlider" blockIncrement="1.0E-4" max="2.0" min="-2.0" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" value="-0.877" />
             <Slider fx:id="cImSlider" blockIncrement="1.0E-5" max="2.0" min="-2.0" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" value="1.0" />
+            <Slider fx:id="iterationSlider" majorTickUnit="2500" max="1000.0" min="1.0" minorTickCount="10" onDragDetected="#sliderChanged" showTickLabels="true" showTickMarks="true" value="1.0" />
          </children>
       </HBox>
    </bottom>
