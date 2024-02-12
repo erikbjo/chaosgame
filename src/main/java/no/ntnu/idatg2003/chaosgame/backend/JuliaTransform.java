@@ -16,13 +16,13 @@ public class JuliaTransform implements Transform2D {
     this.point = point;
     this.sign = sign;
   }
-  
+
   @Override
   public Vector2D transform(Vector2D v) {
     Complex z = new Complex(v.getX0(), v.getX1());
-    Complex result = z.subtract(point) // z - c
-        .sqrt() // sqrt(z - c)
-        .multiply(sign); // +-sqrt(z - c)
+    Complex result = z.subtract(point)     // subtract provided 'point' which presumably is a Complex constant (c in our fractal formulas)
+            .sqrt()                            // take the square root
+            .multiply(sign);                   // multiply by 'sign' which presumably is either 1 or -1
     return new Vector2D(result.getReal(), result.getImaginary());
   }
 }

@@ -21,6 +21,6 @@
       </VBox>
    </left>
    <center>
-      <Canvas fx:id="mainCanvas" height="1000.0" width="1000.0" BorderPane.alignment="CENTER" />
+      <Canvas fx:id="mainCanvas" height="500.0" width="500.0" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>
