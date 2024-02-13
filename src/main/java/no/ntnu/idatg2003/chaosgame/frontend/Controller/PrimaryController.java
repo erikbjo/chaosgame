@@ -13,6 +13,8 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import no.ntnu.idatg2003.chaosgame.backend.AffineTransform2D;
+import no.ntnu.idatg2003.chaosgame.backend.Matrix2x2;
 import no.ntnu.idatg2003.chaosgame.backend.Vector2D;
 import no.ntnu.idatg2003.chaosgame.frontend.alert.ConfirmationAlert;
 
@@ -46,6 +48,10 @@ public class PrimaryController implements Initializable {
     // Instance variables
     private double startX;
     private double startY;
+    private AffineTransform2D f1;
+    private AffineTransform2D f2;
+    private AffineTransform2D f3;
+    private AffineTransform2D f4;
 
     @FXML
     public void initialize() {
@@ -53,6 +59,7 @@ public class PrimaryController implements Initializable {
     }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        makeMatrix();
 
         animationTimer = new AnimationTimer() {
             long lastUpdate = 0;
@@ -85,7 +92,7 @@ public class PrimaryController implements Initializable {
                     startY = endY;
 
                     // Refresh the drawing
-                    drawJuliaSet(mainCanvas.getGraphicsContext2D());
+                    drawFern(mainCanvas.getGraphicsContext2D());
                 });
 
 
@@ -99,10 +106,22 @@ public class PrimaryController implements Initializable {
 
                     zoom(scaleFactor, centerX, centerY);
                 });
-
-                drawJuliaSet(mainCanvas.getGraphicsContext2D());
             }
         };
+        iterationSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            // the slider value has changed, redraw the fern
+            drawFern(mainCanvas.getGraphicsContext2D());
+        });
+
+        cImSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            // the slider value has changed, redraw the fern
+            drawFern(mainCanvas.getGraphicsContext2D());
+        });
+
+        cReSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            // the slider value has changed, redraw the fern
+            drawFern(mainCanvas.getGraphicsContext2D());
+        });
     }
 
     @FXML
@@ -219,5 +238,41 @@ public class PrimaryController implements Initializable {
 
         yMin = centerY - halfHeight / scaleFactor;
         yMax = centerY + halfHeight / scaleFactor;
+    }
+
+    public void makeMatrix() {
+        f1 = new AffineTransform2D(new Matrix2x2(0.00, 0.00, 0.00, 0.16), new Vector2D(0.00, 0.00)); // match exact constants with your case
+        f2 = new AffineTransform2D(new Matrix2x2(0.85, 0.04, -0.04, 0.85), new Vector2D(0.00, 1.60));
+        f3 = new AffineTransform2D(new Matrix2x2(0.20, -0.26, 0.23, 0.22), new Vector2D(0.00, 1.60));
+        f4 = new AffineTransform2D(new Matrix2x2(-0.15, 0.28, 0.26, 0.24), new Vector2D(0.00, 0.44));
+    }
+
+    public void drawFern(GraphicsContext gc) {
+        int iterations = (int) iterationSlider.getValue() * 1000;
+        double scaleFactor = cImSlider.getValue() * 1000;
+
+        Vector2D canvasSize = new Vector2D(mainCanvas.getWidth(), mainCanvas.getHeight());
+        gc.clearRect(0, 0, canvasSize.getX0(), canvasSize.getX1());
+
+        Vector2D currentPoint = new Vector2D(canvasSize.getX0() / scaleFactor / 2, canvasSize.getX1() / scaleFactor / 2);
+
+        Random random = new Random();
+        for (int i = 0; i < iterations; i++) {
+            int randomInt = random.nextInt(100);
+            if (randomInt < 1) {
+                currentPoint = f1.transform(currentPoint);
+            } else if (randomInt < 86) {
+                currentPoint = f2.transform(currentPoint);
+            } else if (randomInt < 93) {
+                currentPoint = f3.transform(currentPoint);
+            } else {
+                currentPoint = f4.transform(currentPoint);
+            }
+            Color color = Color.color(Math.random(), Math.random(), Math.random());
+            gc.setFill(color);
+            double drawX = (currentPoint.getX0() * scaleFactor) + (canvasSize.getX0() / 2);
+            double drawY = (canvasSize.getX1()) - (currentPoint.getX1() * scaleFactor);
+            gc.fillRect(drawX, drawY, 1, 1);
+        }
     }
 }

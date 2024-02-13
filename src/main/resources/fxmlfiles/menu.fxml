@@ -32,6 +32,6 @@
       </HBox>
    </bottom>
    <center>
-      <Canvas fx:id="mainCanvas" height="500.0" nodeOrientation="INHERIT" width="500.0" />
+      <Canvas fx:id="mainCanvas" height="700.0" nodeOrientation="INHERIT" width="700.0" />
    </center>
 </BorderPane>
