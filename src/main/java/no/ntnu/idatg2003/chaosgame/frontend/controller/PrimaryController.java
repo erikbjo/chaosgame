@@ -268,7 +268,7 @@ public class PrimaryController implements Initializable {
             } else {
                 currentPoint = f4.transform(currentPoint);
             }
-            Color color = Color.color(Math.random(), Math.random(), Math.random());
+            Color color = Color.color(Math.random(255), Math.random(255), Math.random(255));
             gc.setFill(color);
             double drawX = (currentPoint.getX0() * scaleFactor) + (canvasSize.getX0() / 2);
             double drawY = (canvasSize.getX1()) - (currentPoint.getX1() * scaleFactor);
